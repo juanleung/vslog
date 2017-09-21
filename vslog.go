@@ -21,6 +21,17 @@ type Logger struct {
 	log  *log.Logger
 }
 
+// Close the file is exist
+func (l *Logger) Close() error {
+	if l.file != nil {
+		err := l.file.Close()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // GetLogger is a function that create a new logger
 func GetLogger(name string, flags int) (*Logger, error) {
 	path := fmt.Sprintf("logs/%s", name)

@@ -21,7 +21,7 @@ type Logger struct {
 	log  *log.Logger
 }
 
-// Close the file is exist
+// Close the file if exist
 func (l *Logger) Close() error {
 	if l.file != nil {
 		err := l.file.Close()
@@ -30,6 +30,16 @@ func (l *Logger) Close() error {
 		}
 	}
 	return nil
+}
+
+// Info register a log message with Info level
+func (l *Logger) Info(message string) {
+	l.log.Println(fmt.Sprintf("INFO - %s", message))
+}
+
+// Error register a log message with Error level
+func (l *Logger) Error(message string) {
+	l.log.Println(fmt.Sprintf("ERROR - %s", message))
 }
 
 // GetLogger is a function that create a new logger

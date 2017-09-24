@@ -45,6 +45,9 @@ func (l *Logger) Error(message string) {
 // GetLogger is a function that create a new logger
 func GetLogger(name string, flags int) (*Logger, error) {
 	path := fmt.Sprintf("logs/%s", name)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		_ = os.MkdirAll(path, 0755)
+	}
 	var mw io.Writer
 	logger := new(Logger)
 
@@ -56,7 +59,7 @@ func GetLogger(name string, flags int) (*Logger, error) {
 
 		if err != nil {
 			return nil, fmt.Errorf(
-				"an error ourred while opening/creating the file: %v", err)
+				"an error ocurred while opening/creating the file: %v", err)
 		}
 	}
 

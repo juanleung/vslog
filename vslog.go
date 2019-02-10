@@ -34,12 +34,12 @@ func (l *Logger) Close() error {
 
 // Info register a log message with Info level
 func (l *Logger) Info(message string) {
-	l.log.Println(fmt.Sprintf("INFO - %s", message))
+	l.log.Println(fmt.Sprintf("INFO | %s", message))
 }
 
 // Infof register a log message with string interpolation and Info level
 func (l *Logger) Infof(message string, a ...interface{}) {
-	l.Info(fmt.Sprintf(message, a))
+	l.Info(fmt.Sprintf(message, a...))
 }
 
 // Error register a log message with Error level
@@ -49,7 +49,7 @@ func (l *Logger) Error(message string) {
 
 // Errorf register a log message with string interpolation and Error level
 func (l *Logger) Errorf(message string, a ...interface{}) {
-	l.Error(fmt.Sprintf(message, a))
+	l.Error(fmt.Sprintf(message, a...))
 }
 
 // GetLogger is a function that create a new logger

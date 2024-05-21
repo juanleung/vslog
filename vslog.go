@@ -23,17 +23,6 @@ type Logger struct {
 	flags int
 }
 
-// Close the file if exist
-// func (l *Logger) Close() error {
-// 	if l.file != nil {
-// 		err := l.file.Close()
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-// 	return nil
-// }
-
 // Info register a log message with Info level
 func (l *Logger) Info(message string) {
 	if l.flags&FILE != 0 {
@@ -112,32 +101,12 @@ func GetLogger(name string, flags int) (*Logger, error) {
 	logger.flags = flags
 	logger.name = name
 
-	// if flags&FILE != 0 {
-	// 	var err error
-	// 	logger.file, err = os.OpenFile(
-	// 		fmt.Sprintf("%s/%s.log", path, time.Now().Format("02-01-2006")),
-	// 		os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
-
-	// 	if err != nil {
-	// 		return nil, fmt.Errorf(
-	// 			"an error ocurred while opening/creating the file: %v", err)
-	// 	}
-	// }
-
 	if STDOUT == logger.flags {
 		mw = os.Stdout
 	} else if STDERR == flags {
 		mw = os.Stderr
-		// } else if FILE == flags {
-		// 	mw = logger.file
 	} else if STDOUT|STDERR == flags {
 		mw = io.MultiWriter(os.Stdout, os.Stderr)
-		// } else if STDOUT|FILE == flags {
-		// 	mw = io.MultiWriter(os.Stdout, logger.file)
-		// } else if STDERR|FILE == flags {
-		// 	mw = io.MultiWriter(os.Stderr, logger.file)
-		// } else if STDOUT|STDERR|FILE == flags {
-		// 	mw = io.MultiWriter(os.Stdout, os.Stderr, logger.file)
 	} else {
 		mw = os.Stdout
 	}

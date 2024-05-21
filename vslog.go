@@ -17,24 +17,43 @@ const (
 
 // Logger is the logging object
 type Logger struct {
-	file *os.File
-	log  *log.Logger
+	// file        *os.File
+	log   *log.Logger
+	name  string
+	flags int
 }
 
 // Close the file if exist
-func (l *Logger) Close() error {
-	if l.file != nil {
-		err := l.file.Close()
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
+// func (l *Logger) Close() error {
+// 	if l.file != nil {
+// 		err := l.file.Close()
+// 		if err != nil {
+// 			return err
+// 		}
+// 	}
+// 	return nil
+// }
 
 // Info register a log message with Info level
 func (l *Logger) Info(message string) {
-	l.log.Println(fmt.Sprintf("INFO | %s", message))
+	if l.flags&FILE != 0 {
+		lerr := log.New(os.Stderr, "vslog error", log.Ldate|log.Ltime)
+		f, err := l.openFile()
+		defer func() {
+			_ = f.Close()
+		}()
+		if err != nil {
+			lerr.Printf("an error ocurred while logging to file: %v", err)
+		}
+		_, err = fmt.Fprintf(f, "INFO | %s\n", message)
+		if err != nil {
+			lerr.Printf("an error ocurred while writing the log file: %v", err)
+		}
+	}
+
+	if l.flags&STDOUT != 0 || l.flags&STDERR != 0 {
+		l.log.Printf("INFO | %s\n", message)
+	}
 }
 
 // Infof register a log message with string interpolation and Info level
@@ -44,12 +63,42 @@ func (l *Logger) Infof(message string, a ...interface{}) {
 
 // Error register a log message with Error level
 func (l *Logger) Error(message string) {
-	l.log.Println(fmt.Sprintf("ERROR - %s", message))
+	if l.flags&FILE != 0 {
+		lerr := log.New(os.Stderr, "vslog error", log.Ldate|log.Ltime)
+		f, err := l.openFile()
+		defer func() {
+			_ = f.Close()
+		}()
+		if err != nil {
+			lerr.Printf("an error ocurred while logging to file: %v", err)
+		}
+		_, err = fmt.Fprintf(f, "ERROR | %s\n", message)
+		if err != nil {
+			lerr.Printf("an error ocurred while writing the log file: %v", err)
+		}
+	}
+
+	if l.flags&STDOUT != 0 || l.flags&STDERR != 0 {
+		l.log.Printf("ERROR | %s\n", message)
+	}
 }
 
 // Errorf register a log message with string interpolation and Error level
 func (l *Logger) Errorf(message string, a ...interface{}) {
 	l.Error(fmt.Sprintf(message, a...))
+}
+
+func (l *Logger) openFile() (*os.File, error) {
+	path := fmt.Sprintf("logs/%s", l.name)
+	var err error
+	file, err := os.OpenFile(
+		fmt.Sprintf("%s/%s.log", path, time.Now().Format("02-01-2006")),
+		os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
+	if err != nil {
+		return nil, fmt.Errorf(
+			"an error ocurred while opening/creating the log file: %v", err)
+	}
+	return file, nil
 }
 
 // GetLogger is a function that create a new logger
@@ -60,33 +109,35 @@ func GetLogger(name string, flags int) (*Logger, error) {
 	}
 	var mw io.Writer
 	logger := new(Logger)
+	logger.flags = flags
+	logger.name = name
 
-	if flags&FILE != 0 {
-		var err error
-		logger.file, err = os.OpenFile(
-			fmt.Sprintf("%s/%s.log", path, time.Now().Format("02-01-2006")),
-			os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
+	// if flags&FILE != 0 {
+	// 	var err error
+	// 	logger.file, err = os.OpenFile(
+	// 		fmt.Sprintf("%s/%s.log", path, time.Now().Format("02-01-2006")),
+	// 		os.O_CREATE|os.O_APPEND|os.O_RDWR, 0660)
 
-		if err != nil {
-			return nil, fmt.Errorf(
-				"an error ocurred while opening/creating the file: %v", err)
-		}
-	}
+	// 	if err != nil {
+	// 		return nil, fmt.Errorf(
+	// 			"an error ocurred while opening/creating the file: %v", err)
+	// 	}
+	// }
 
-	if STDOUT == flags {
+	if STDOUT == logger.flags {
 		mw = os.Stdout
 	} else if STDERR == flags {
 		mw = os.Stderr
-	} else if FILE == flags {
-		mw = logger.file
+		// } else if FILE == flags {
+		// 	mw = logger.file
 	} else if STDOUT|STDERR == flags {
 		mw = io.MultiWriter(os.Stdout, os.Stderr)
-	} else if STDOUT|FILE == flags {
-		mw = io.MultiWriter(os.Stdout, logger.file)
-	} else if STDERR|FILE == flags {
-		mw = io.MultiWriter(os.Stderr, logger.file)
-	} else if STDOUT|STDERR|FILE == flags {
-		mw = io.MultiWriter(os.Stdout, os.Stderr, logger.file)
+		// } else if STDOUT|FILE == flags {
+		// 	mw = io.MultiWriter(os.Stdout, logger.file)
+		// } else if STDERR|FILE == flags {
+		// 	mw = io.MultiWriter(os.Stderr, logger.file)
+		// } else if STDOUT|STDERR|FILE == flags {
+		// 	mw = io.MultiWriter(os.Stdout, os.Stderr, logger.file)
 	} else {
 		mw = os.Stdout
 	}

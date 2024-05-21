@@ -14,12 +14,6 @@ func TestLogger(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error ocurred while creating the logger | error: %v", err)
 	}
-	defer func() {
-		err := logger.Close()
-		if err != nil {
-			t.Fatalf("error ocurred while closing the logger | error: %v", err)
-		}
-	}()
 	defer os.RemoveAll("logs")
 
 	logger.Info("testing Info level log")

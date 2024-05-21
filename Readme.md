@@ -16,9 +16,6 @@ import "github.com/juanleung/vslog"
 
 func main() {
   logger, err := vslog.GetLogger("LogName", vslog.STDOUT|vslog.FILE)
-  // If using the FILE flag use Close to close the file
-  defer logger.Close()
-
   logger.Info("A very simple logger")
 }
 ```

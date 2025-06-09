@@ -15,6 +15,9 @@ const (
 	FILE
 )
 
+// DateTimeFormat defines the custom date and time format for logs
+const DateTimeFormat = "02-01-2006 15:04:05"
+
 // Logger is the logging object
 type Logger struct {
 	// file        *os.File
@@ -25,6 +28,8 @@ type Logger struct {
 
 // Info register a log message with Info level
 func (l *Logger) Info(message string) {
+	timestamp := time.Now().Format(DateTimeFormat)
+
 	if l.flags&FILE != 0 {
 		lerr := log.New(os.Stderr, "vslog error", log.Ldate|log.Ltime)
 		f, err := l.openFile()
@@ -34,14 +39,14 @@ func (l *Logger) Info(message string) {
 		if err != nil {
 			lerr.Printf("an error ocurred while logging to file: %v", err)
 		}
-		_, err = fmt.Fprintf(f, "INFO | %s\n", message)
+		_, err = fmt.Fprintf(f, "%s | INFO | %s\n", timestamp, message)
 		if err != nil {
 			lerr.Printf("an error ocurred while writing the log file: %v", err)
 		}
 	}
 
 	if l.flags&STDOUT != 0 || l.flags&STDERR != 0 {
-		l.log.Printf("INFO | %s\n", message)
+		fmt.Fprintf(l.log.Writer(), "%s | INFO | %s\n", timestamp, message)
 	}
 }
 
@@ -52,6 +57,8 @@ func (l *Logger) Infof(message string, a ...interface{}) {
 
 // Error register a log message with Error level
 func (l *Logger) Error(message string) {
+	timestamp := time.Now().Format(DateTimeFormat)
+
 	if l.flags&FILE != 0 {
 		lerr := log.New(os.Stderr, "vslog error", log.Ldate|log.Ltime)
 		f, err := l.openFile()
@@ -61,14 +68,14 @@ func (l *Logger) Error(message string) {
 		if err != nil {
 			lerr.Printf("an error ocurred while logging to file: %v", err)
 		}
-		_, err = fmt.Fprintf(f, "ERROR | %s\n", message)
+		_, err = fmt.Fprintf(f, "%s | ERROR | %s\n", timestamp, message)
 		if err != nil {
 			lerr.Printf("an error ocurred while writing the log file: %v", err)
 		}
 	}
 
 	if l.flags&STDOUT != 0 || l.flags&STDERR != 0 {
-		l.log.Printf("ERROR | %s\n", message)
+		fmt.Fprintf(l.log.Writer(), "%s | ERROR | %s\n", timestamp, message)
 	}
 }
 
@@ -110,6 +117,6 @@ func GetLogger(name string, flags int) (*Logger, error) {
 	} else {
 		mw = os.Stdout
 	}
-	logger.log = log.New(mw, "", log.Ldate|log.Ltime)
+	logger.log = log.New(mw, "", 0)
 	return logger, nil
 }

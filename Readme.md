@@ -1,6 +1,6 @@
 # Vslog - Very simple log
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)]
+![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)
 
 ## Flags
 STDOUT: Logs to the OS Stdout output

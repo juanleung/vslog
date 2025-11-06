@@ -17,7 +17,7 @@ package main
 import "github.com/juanleung/vslog"
 
 func main() {
-  logger, err := vslog.GetLogger("LogName", vslog.STDOUT|vslog.FILE)
+  logger, err := vslog.GetLogger(vslog.STDOUT|vslog.FILE, "loggerName" /* optional */)
   logger.Info("A very simple logger")
 }
 ```
